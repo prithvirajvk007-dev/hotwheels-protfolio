@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MarketPlace - Seller Portfolio</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #f3f4f6; }
+        
+        /* Navbar */
+        .navbar { background: #1f2937; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: #60a5fa; }
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-links a, .nav-links button { color: white; text-decoration: none; background: none; border: none; cursor: pointer; font-size: 1rem; }
+        .nav-links button { background: #3b82f6; padding: 0.5rem 1rem; border-radius: 6px; }
+        
+        /* Auth Pages */
+        .auth-container { max-width: 400px; margin: 3rem auto; background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .auth-container h2 { text-align: center; margin-bottom: 1.5rem; color: #1f2937; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #4b5563; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1rem; }
+        .form-group input:focus { outline: none; border-color: #3b82f6; }
+        .btn { width: 100%; padding: 0.75rem; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 1rem; }
+        .btn:hover { background: #2563eb; }
+        .toggle-auth { text-align: center; margin-top: 1rem; color: #6b7280; }
+        .toggle-auth a { color: #3b82f6; cursor: pointer; text-decoration: underline; }
+        .error { color: #ef4444; font-size: 0.875rem; margin-top: 0.25rem; display: none; }
+        
+        /* Main App */
+        .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .hidden { display: none !important; }
+        
+        /* Seller Profile */
+        .profile-header { background: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; display: flex; gap: 2rem; align-items: center; }
+        .profile-avatar { width: 100px; height: 100px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white; font-weight: bold; }
+        .profile-info h1 { color: #1f2937; margin-bottom: 0.5rem; }
+        .profile-info p { color: #6b7280; }
+        
+        /* Add Product Form */
+        .add-product { background: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; }
+        .add-product h3 { margin-bottom: 1rem; color: #1f2937; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        
+        /* Products Grid */
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+        .product-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .product-card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        .product-image { width: 100%; height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; }
+        .product-details { padding: 1.5rem; }
+        .product-seller { font-size: 0.875rem; color: #3b82f6; font-weight: 600; margin-bottom: 0.5rem; }
+        .product-title { font-size: 1.25rem; font-weight: bold; color: #1f2937; margin-bottom: 0.5rem; }
+        .product-desc { color: #6b7280; margin-bottom: 1rem; line-height: 1.5; }
+        .product-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid #e5e7eb; }
+        .product-price { font-size: 1.5rem; font-weight: bold; color: #059669; }
+        .delete-btn { background: #ef4444; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; }
+        
+        /* All Sellers Page */
+        .sellers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; }
+        .seller-card { background: white; padding: 1.5rem; border-radius: 12px; text-align: center; cursor: pointer; transition: transform 0.2s; }
+        .seller-card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        .seller-avatar { width: 80px; height: 80px; background: #8b5cf6; border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; }
+        .seller-name { font-weight: bold; color: #1f2937; margin-bottom: 0.25rem; }
+        .seller-count { color: #6b7280; font-size: 0.875rem; }
+        
+        .section-title { font-size: 1.5rem; color: #1f2937; margin-bottom: 1.5rem; }
+        .tabs { display: flex; gap: 1rem; margin-bottom: 2rem; }
+        .tab { padding: 0.5rem 1rem; background: white; border: 2px solid #e5e7eb; border-radius: 8px; cursor: pointer; font-weight: 600; color: #4b5563; }
+        .tab.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">🏪 MarketPlace</div>
+        <div class="nav-links">
+            <a onclick="showPage('home')">All Products</a>
+            <a onclick="showPage('sellers')">All Sellers</a>
+            <span id="userNav" class="hidden">
+                <a onclick="showPage('myProfile')">My Portfolio</a>
+                <span id="loggedInUser" style="margin: 0 1rem;"></span>
+                <button onclick="logout()">Logout</button>
+            </span>
+            <span id="guestNav">
+                <button onclick="showPage('login')">Seller Login</button>
+            </span>
+        </div>
+    </nav>
+
+    <!-- LOGIN PAGE -->
+    <div id="loginPage" class="auth-container hidden">
+        <h2>🔐 Seller Login</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" required placeholder="seller@example.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" required placeholder="••••••••">
+            </div>
+            <div class="error" id="loginError">Invalid email or password!</div>
+            <button type="submit" class="btn">Login</button>
+        </form>
+        <div class="toggle-auth">
+            Don't have an account? <a onclick="showPage('register')">Register as Seller</a>
+        </div>
+    </div>
+
+    <!-- REGISTER PAGE -->
+    <div id="registerPage" class="auth-container hidden">
+        <h2>📝 Seller Registration</h2>
+        <form id="registerForm">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="regName" required placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="regEmail" required placeholder="seller@example.com">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="regPassword" required placeholder="Min 6 characters" minlength="6">
+            </div>
+            <div class="form-group">
+                <label>Business Name</label>
+                <input type="text" id="regBusiness" required placeholder="JD Electronics">
+            </div>
+            <div class="error" id="regError">Email already registered!</div>
+            <button type="submit" class="btn">Create Account</button>
+        </form>
+        <div class="toggle-auth">
+            Already have an account? <a onclick="showPage('login')">Login</a>
+        </div>
+    </div>
+
+    <!-- HOME PAGE - ALL PRODUCTS -->
+    <div id="homePage" class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="filterProducts('all', this)">All Products</button>
+            <button class="tab" onclick="filterProducts('electronics', this)">Electronics</button>
+            <button class="tab" onclick="filterProducts('fashion', this)">Fashion</button>
+            <button class="tab" onclick="filterProducts('home', this)">Home</button>
+        </div>
+        <div id="allProductsGrid" class="products-grid"></div>
+    </div>
+
+    <!-- ALL SELLERS PAGE -->
+    <div id="sellersPage" class="container hidden">
+        <h2 class="section-title">🏪 Our Sellers</h2>
+        <div id="sellersGrid" class="sellers-grid"></div>
+    </div>
+
+    <!-- MY PROFILE / PORTFOLIO -->
+    <div id="profilePage" class="container hidden">
+        <div class="profile-header">
+            <div class="profile-avatar" id="profileAvatar">JD</div>
+            <div class="profile-info">
+                <h1 id="profileName">John Doe</h1>
+                <p id="profileBusiness">JD Electronics</p>
+                <p id="profileEmail" style="color: #6b7280; margin-top: 0.25rem;">john@example.com</p>
+            </div>
+        </div>
+
+        <div class="add-product">
+            <h3>➕ Add New Product</h3>
+            <form id="addProductForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Product Name</label>
+                        <input type="text" id="prodName" required placeholder="Wireless Headphones">
+                    </div>
+                    <div class="form-group">
+                        <label>Price ($)</label>
+                        <input type="number" id="prodPrice" required placeholder="49.99" step="0.01">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="prodCategory" required>
+                            <option value="electronics">Electronics</option>
+                            <option value="fashion">Fashion</option>
+                            <option value="home">Home & Living</option>
+                            <option value="sports">Sports</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Condition</label>
+                        <select id="prodCondition" required>
+                            <option value="new">Brand New</option>
+                            <option value="used">Used - Like New</option>
+                            <option value="refurbished">Refurbished</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="prodDesc" required placeholder="Describe your product..." rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn">Post Product</button>
+            </form>
+        </div>
+
+        <h2 class="section-title">My Products</h2>
+        <div id="myProductsGrid" class="products-grid"></div>
+    </div>
+
+    <!-- SELLER PUBLIC PROFILE -->
+    <div id="sellerPublicPage" class="container hidden">
+        <div class="profile-header">
+            <div class="profile-avatar" id="publicAvatar">JD</div>
+            <div class="profile-info">
+                <h1 id="publicName">Seller Name</h1>
+                <p id="publicBusiness">Business Name</p>
+            </div>
+        </div>
+        <h2 class="section-title">Products by this Seller</h2>
+        <div id="publicProductsGrid" class="products-grid"></div>
+    </div>
+
+    <script>
+        // Data Storage (LocalStorage)
+        const Storage = {
+            getUsers: () => JSON.parse(localStorage.getItem('mp_users') || '[]'),
+            saveUsers: (users) => localStorage.setItem('mp_users', JSON.stringify(users)),
+            getProducts: () => JSON.parse(localStorage.getItem('mp_products') || '[]'),
+            saveProducts: (products) => localStorage.setItem('mp_products', JSON.stringify(products)),
+            getCurrentUser: () => JSON.parse(localStorage.getItem('mp_current_user') || 'null'),
+            setCurrentUser: (user) => localStorage.setItem('mp_current_user', JSON.stringify(user))
+        };
+
+        // Initialize demo data if empty
+        function initDemoData() {
+            if (Storage.getUsers().length === 0) {
+                const demoUsers = [
+                    { id: 1, name: 'Alice Johnson', email: 'alice@shop.com', password: '123456', business: 'Alice Fashion Hub' },
+                    { id: 2, name: 'Bob Smith', email: 'bob@tech.com', password: '123456', business: 'Bob Tech Store' }
+                ];
+                const demoProducts = [
+                    { id: 1, sellerId: 1, sellerName: 'Alice Johnson', sellerBusiness: 'Alice Fashion Hub', name: 'Designer Handbag', price: 89.99, category: 'fashion', condition: 'new', desc: 'Premium leather handbag, perfect for daily use.', date: '2026-04-28' },
+                    { id: 2, sellerId: 2, sellerName: 'Bob Smith', sellerBusiness: 'Bob Tech Store', name: 'Bluetooth Speaker', price: 45.00, category: 'electronics', condition: 'new', desc: 'Portable wireless speaker with amazing bass.', date: '2026-04-29' },
+                    { id: 3, sellerId: 1, sellerName: 'Alice Johnson', sellerBusiness: 'Alice Fashion Hub', name: 'Summer Dress', price: 35.50, category: 'fashion', condition: 'new', desc: 'Light and breezy summer dress in floral print.', date: '2026-04-30' }
+                ];
+                Storage.saveUsers(demoUsers);
+                Storage.saveProducts(demoProducts);
+            }
+        }
+
+        // Page Navigation
+        function showPage(page) {
+            // Hide all pages
+            document.querySelectorAll('.auth-container, .container').forEach(el => el.classList.add('hidden'));
+            
+            // Show requested page
+            if (page === 'login') document.getElementById('loginPage').classList.remove('hidden');
+            else if (page === 'register') document.getElementById('registerPage').classList.remove('hidden');
+            else if (page === 'home') {
+                document.getElementById('homePage').classList.remove('hidden');
+                renderAllProducts();
+            }
+            else if (page === 'sellers') {
+                document.getElementById('sellersPage').classList.remove('hidden');
+                renderSellers();
+            }
+            else if (page === 'myProfile') {
+                if (!Storage.getCurrentUser()) { showPage('login'); return; }
+                document.getElementById('profilePage').classList.remove('hidden');
+                renderMyProfile();
+            }
+            else if (page === 'sellerPublic') {
+                document.getElementById('sellerPublicPage').classList.remove('hidden');
+            }
+            
+            // Update nav
+            updateNav();
+        }
+
+        function updateNav() {
+            const user = Storage.getCurrentUser();
+            if (user) {
+                document.getElementById('userNav').classList.remove('hidden');
+                document.getElementById('guestNav').classList.add('hidden');
+                document.getElementById('loggedInUser').textContent = `Hi, ${user.name}`;
+            } else {
+                document.getElementById('userNav').classList.add('hidden');
+                document.getElementById('guestNav').classList.remove('hidden');
+            }
+        }
+
+        // Registration
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const users = Storage.getUsers();
+            const email = document.getElementById('regEmail').value;
+            
+            if (users.find(u => u.email === email)) {
+                document.getElementById('regError').style.display = 'block';
+                return;
+            }
+            
+            const newUser = {
+                id: Date.now(),
+                name: document.getElementById('regName').value,
+                email: email,
+                password: document.getElementById('regPassword').value,
+                business: document.getElementById('regBusiness').value
+            };
+            
+            users.push(newUser);
+            Storage.saveUsers(users);
+            Storage.setCurrentUser(newUser);
+            showPage('myProfile');
+        });
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const users = Storage.getUsers();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const user = users.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                Storage.setCurrentUser(user);
+                showPage('myProfile');
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        });
+
+        // Logout
+        function logout() {
+            Storage.setCurrentUser(null);
+            showPage('home');
+        }
+
+        // Add Product
+        document.getElementById('addProductForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const user = Storage.getCurrentUser();
+            if (!user) return;
+            
+            const products = Storage.getProducts();
+            const newProduct = {
+                id: Date.now(),
+                sellerId: user.id,
+                sellerName: user.name,
+                sellerBusiness: user.business,
+                name: document.getElementById('prodName').value,
+                price: parseFloat(document.getElementById('prodPrice').value),
+                category: document.getElementById('prodCategory').value,
+                condition: document.getElementById('prodCondition').value,
+                desc: document.getElementById('prodDesc').value,
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            products.push(newProduct);
+            Storage.saveProducts(products);
+            this.reset();
+            renderMyProfile();
+            alert('✅ Product posted successfully!');
+        });
+
+        // Render Functions
+        function renderAllProducts(category = 'all') {
+            const products = Storage.getProducts();
+            const filtered = category === 'all' ? products : products.filter(p => p.category === category);
+            const grid = document.getElementById('allProductsGrid');
+            
+            grid.innerHTML = filtered.length === 0 ? '<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">No products found.</p>' : 
+                filtered.map(p => `
+                    <div class="product-card">
+                        <div class="product-image">📦</div>
+                        <div class="product-details">
+                            <div class="product-seller" onclick="viewSellerProfile(${p.sellerId})" style="cursor: pointer;">🏪 ${p.sellerBusiness}</div>
+                            <div class="product-title">${p.name}</div>
+                            <div class="product-desc">${p.desc}</div>
+                            <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">
+                                <span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 4px;">${p.condition}</span>
+                                <span style="background: #fce7f3; color: #be185d; padding: 0.25rem 0.5rem; border-radius: 4px; margin-left: 0.5rem;">${p.category}</span>
+                            </div>
+                            <div class="product-footer">
+                                <span class="product-price">$${p.price.toFixed(2)}</span>
+                                <span style="color: #9ca3af; font-size: 0.875rem;">${p.date}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        function filterProducts(category, btn) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            renderAllProducts(category);
+        }
+
+        function renderSellers() {
+            const users = Storage.getUsers();
+            const products = Storage.getProducts();
+            const grid = document.getElementById('sellersGrid');
+            
+            grid.innerHTML = users.map(u => {
+                const count = products.filter(p => p.sellerId === u.id).length;
+                return `
+                    <div class="seller-card" onclick="viewSellerProfile(${u.id})">
+                        <div class="seller-avatar">${u.name.split(' ').map(n => n[0]).join('')}</div>
+                        <div class="seller-name">${u.name}</div>
+                        <div style="color: #3b82f6; font-size: 0.875rem; margin-bottom: 0.25rem;">${u.business}</div>
+                        <div class="seller-count">${count} product${count !== 1 ? 's' : ''} listed</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderMyProfile() {
+            const user = Storage.getCurrentUser();
+            if (!user) return;
+            
+            document.getElementById('profileName').textContent = user.name;
+            document.getElementById('profileBusiness').textContent = user.business;
+            document.getElementById('profileEmail').textContent = user.email;
+            document.getElementById('profileAvatar').textContent = user.name.split(' ').map(n => n[0]).join('');
+            
+            const products = Storage.getProducts().filter(p => p.sellerId === user.id);
+            const grid = document.getElementById('myProductsGrid');
+            
+            grid.innerHTML = products.length === 0 ? '<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">You haven\'t posted any products yet.</p>' :
+                products.map(p => `
+                    <div class="product-card">
+                        <div class="product-image">📦</div>
+                        <div class="product-details">
+                            <div class="product-title">${p.name}</div>
+                            <div class="product-desc">${p.desc}</div>
+                            <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">
+                                <span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 4px;">${p.condition}</span>
+                            </div>
+                            <div class="product-footer">
+                                <span class="product-price">$${p.price.toFixed(2)}</span>
+                                <button class="delete-btn" onclick="deleteProduct(${p.id})">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+        }
+
+        function viewSellerProfile(sellerId) {
+            const users = Storage.getUsers();
+            const products = Storage.getProducts();
+            const seller = users.find(u => u.id === sellerId);
+            
+            if (!seller) return;
+            
+            document.getElementById('publicName').textContent = seller.name;
+            document.getElementById('publicBusiness').textContent = seller.business;
+            document.getElementById('publicAvatar').textContent = seller.name.split(' ').map(n => n[0]).join('');
+            
+            const sellerProducts = products.filter(p => p.sellerId === sellerId);
+            const grid = document.getElementById('publicProductsGrid');
+            
+            grid.innerHTML = sellerProducts.length === 0 ? '<p style="grid-column: 1/-1; text-align: center; color: #6b7280;">No products yet.</p>' :
+                sellerProducts.map(p => `
+                    <div class="product-card">
+                        <div class="product-image">📦</div>
+                        <div class="product-details">
+                            <div class="product-title">${p.name}</div>
+                            <div class="product-desc">${p.desc}</div>
+                            <div class="product-footer">
+                                <span class="product-price">$${p.price.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            
+            showPage('sellerPublic');
+        }
+
+        function deleteProduct(productId) {
+            if (!confirm('Are you sure you want to delete this product?')) return;
+            const products = Storage.getProducts().filter(p => p.id !== productId);
+            Storage.saveProducts(products);
+            renderMyProfile();
+        }
+
+        // Initialize
+        initDemoData();
+        showPage('home');
+    </script>
+</body>
+</html>
